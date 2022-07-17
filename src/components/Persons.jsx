@@ -1,4 +1,4 @@
-const Persons = ({ filterList, persons }) => {
+const Persons = ({ filterList, persons, handleDelete }) => {
   return (
     <ol>
       {filterList() ||
@@ -6,6 +6,7 @@ const Persons = ({ filterList, persons }) => {
           return (
             <li key={person.name}>
               {person.name} {person.number}
+              <button onClick={() => handleDelete(person)}>delete</button>
             </li>
           );
         })}

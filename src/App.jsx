@@ -48,10 +48,19 @@ const App = () => {
           return (
             <li key={person.name}>
               {person.name} {person.number}
+              <button onClick={() => handleDelete(person)}>delete</button>
             </li>
           );
         }
       });
+    }
+  };
+
+  const handleDelete = (person) => {
+    const { id, name } = person;
+    if (window.confirm(`Delete ${name}?`)) {
+      noteService.deleteNote(id);
+      setPersons(persons.filter((person) => person.name !== name));
     }
   };
 
@@ -68,7 +77,11 @@ const App = () => {
         phoneNumber={phoneNumber}
       />
       <h3>Numbers</h3>
-      <Persons filterList={filterList} persons={persons} />
+      <Persons
+        filterList={filterList}
+        persons={persons}
+        handleDelete={handleDelete}
+      />
     </div>
   );
 };

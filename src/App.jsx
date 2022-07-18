@@ -16,15 +16,39 @@ const App = () => {
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    const newPerson = {
-      name: newName,
-      number: phoneNumber,
-    };
-    persons.some((person) => person.name === newName)
-      ? alert(`${newName} is already added to the phonebook`)
-      : noteService
+
+    const contactExists = persons.some((person) => {
+      if (person.name === newName.trim()) {
+        if (
+          window.confirm(
+            `${person.name} is already added to the phonebook. Replace the old number with a new one?`
+          )
+        ) {
+          const updateNumber = {
+            ...person,
+            number: phoneNumber,
+          };
+          noteService
+            .update(person.id, updateNumber)
+            .then((data) =>
+              setPersons(
+                persons.map((person) => (person.id === data.id ? data : person))
+              )
+            );
+        }
+        return true;
+      }
+    });
+    if (!contactExists) {
+      const newPerson = {
+        name: newName.trim(),
+        number: phoneNumber,
+      };
+      persons.every((person) => person.name !== newName.trim()) &&
+        noteService
           .create(newPerson)
           .then((data) => setPersons([...persons, data]));
+    }
     setNewName('');
     setPhoneNumber('');
   };

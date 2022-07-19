@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import Filter from './components/Filter';
+import Notification from './components/Notification';
 import PersonForm from './components/PersonForm';
 import Persons from './components/Persons';
 import noteService from './services/notes';
@@ -9,6 +10,7 @@ const App = () => {
   const [newName, setNewName] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [filtered, setFiltered] = useState('');
+  const [message, setMessage] = useState(null);
 
   useEffect(() => {
     noteService.getAll().then((data) => setPersons(data));
@@ -30,11 +32,18 @@ const App = () => {
           };
           noteService
             .update(person.id, updateNumber)
-            .then((data) =>
+            .then((data) => {
               setPersons(
                 persons.map((person) => (person.id === data.id ? data : person))
-              )
-            );
+              );
+              setMessage(`Updated ${person.name}`);
+            })
+            .catch((error) => {
+              setMessage(
+                `The note '${person.name}' has already been deleted from the server.`
+              );
+              setPersons(persons.filter((p) => p.id !== person.id));
+            });
         }
         return true;
       }
@@ -45,12 +54,14 @@ const App = () => {
         number: phoneNumber,
       };
       persons.every((person) => person.name !== newName.trim()) &&
-        noteService
-          .create(newPerson)
-          .then((data) => setPersons([...persons, data]));
+        noteService.create(newPerson).then((data) => {
+          setPersons([...persons, data]);
+          setMessage(`Added ${data.name}`);
+        });
     }
     setNewName('');
     setPhoneNumber('');
+    setTimeout(() => setMessage(null), 3000);
   };
 
   const handleFilter = ({ target }) => {
@@ -91,6 +102,7 @@ const App = () => {
   return (
     <div>
       <h2>Phonebook</h2>
+      <Notification message={message} />
       <Filter handleFilter={handleFilter} filtered={filtered} />
       <h3>Add a new contact</h3>
       <PersonForm

@@ -18,7 +18,6 @@ const PersonForm = ({
           id="number"
           onChange={handlePhoneNumber}
           value={phoneNumber}
-          pattern="[0-9]{3}-[0-9]{3}-[0-9]{4}"
         />
       </div>
       <div>

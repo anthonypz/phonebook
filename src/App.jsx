@@ -3,7 +3,7 @@ import Filter from './components/Filter';
 import Notification from './components/Notification';
 import PersonForm from './components/PersonForm';
 import Persons from './components/Persons';
-import noteService from './services/notes';
+import phonebookService from './services/phonebook';
 
 const App = () => {
   const [persons, setPersons] = useState([]);
@@ -13,12 +13,11 @@ const App = () => {
   const [message, setMessage] = useState(null);
 
   useEffect(() => {
-    noteService.getAll().then((data) => setPersons(data));
+    phonebookService.getAll().then((data) => setPersons(data));
   }, []);
 
   const handleSubmit = (event) => {
     event.preventDefault();
-
     const contactExists = persons.some((person) => {
       if (person.name === newName.trim()) {
         if (
@@ -30,7 +29,7 @@ const App = () => {
             ...person,
             number: phoneNumber,
           };
-          noteService
+          phonebookService
             .update(person.id, updateNumber)
             .then((data) => {
               setPersons(
@@ -39,10 +38,14 @@ const App = () => {
               setMessage(`Updated ${person.name}`);
             })
             .catch((error) => {
-              setMessage(
-                `The note '${person.name}' has already been deleted from the server.`
-              );
-              setPersons(persons.filter((p) => p.id !== person.id));
+              if (error.response.status === 400) {
+                setMessage(error.response.data.error);
+              } else {
+                setMessage(
+                  `The note '${person.name}' has already been deleted from the server.`
+                );
+                setPersons(persons.filter((p) => p.id !== person.id));
+              }
             });
         }
         return true;
@@ -53,15 +56,19 @@ const App = () => {
         name: newName.trim(),
         number: phoneNumber,
       };
-      persons.every((person) => person.name !== newName.trim()) &&
-        noteService.create(newPerson).then((data) => {
+      phonebookService
+        .create(newPerson)
+        .then((data) => {
           setPersons([...persons, data]);
           setMessage(`Added ${data.name}`);
+        })
+        .catch((error) => {
+          setMessage(error.response.data.error);
         });
     }
     setNewName('');
     setPhoneNumber('');
-    setTimeout(() => setMessage(null), 3000);
+    setTimeout(() => setMessage(null), 5000);
   };
 
   const handleFilter = ({ target }) => {
@@ -94,7 +101,7 @@ const App = () => {
   const handleDelete = (person) => {
     const { id, name } = person;
     if (window.confirm(`Delete ${name}?`)) {
-      noteService.deleteNote(id);
+      phonebookService.deleteNote(id);
       setPersons(persons.filter((person) => person.name !== name));
     }
   };

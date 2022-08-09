@@ -1,6 +1,9 @@
 const Notification = ({ message }) => {
+  if (message === null) return null;
   const notificationStyle = {
-    color: message !== null && message.includes('deleted') ? 'red' : 'green',
+    color: ['deleted', 'required', 'not'].some((word) => message.includes(word))
+      ? 'red'
+      : 'green',
     background: 'lightgrey',
     fontSize: '20px',
     borderStyle: 'solid',
@@ -8,7 +11,6 @@ const Notification = ({ message }) => {
     padding: '10px',
     marginBottom: '10px',
   };
-  if (message === null) return null;
   return <div style={notificationStyle}>{message}</div>;
 };
 
